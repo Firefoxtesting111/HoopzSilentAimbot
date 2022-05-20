@@ -1,0 +1,96 @@
+game:GetService("Players").Name = "Players"
+
+function closestHoop()
+    local dist,hoop = math.huge
+    local char = game.Players.LocalPlayer.Character
+    for i,v in pairs(workspace.PracticeArea:GetChildren()) do
+        if v:IsA("Model")  then
+            for s,l in pairs(v:GetChildren()) do
+                    local rim = l:FindFirstChild"Net"
+                if  rim  then
+                     magnitude = (char.HumanoidRootPart.Position - rim.Position).Magnitude
+                    if magnitude < dist then
+                        dist = magnitude
+                        _G.hoopp = rim
+                    end
+                end
+            end
+        end
+    end
+    return _G.hoopp.Position
+end
+
+coroutine.resume(coroutine.create(function()
+while task.wait() do
+    if game.Players.LocalPlayer.Character then
+        local char = game.Players.LocalPlayer.Character
+        _G.mag = (char.HumanoidRootPart.Position - closestHoop()).Magnitude
+        end
+    end
+end))
+coroutine.resume(coroutine.create(function()
+while wait(0.1) do
+    _G.hoop = closestHoop()
+    _G.sp = workspace.CurrentCamera:WorldToViewportPoint(closestHoop()) 
+    end
+end))
+
+coroutine.resume(coroutine.create(function()
+    pcall(function()
+    while true do task.wait()
+           if game.Players.LocalPlayer.Character then
+               local char = game.Players.LocalPlayer.Character
+                local  magnitude = (char.HumanoidRootPart.Position - _G.hoop).Magnitude * 1.3
+                if magnitude < 120 and magnitude > 71 then
+                    local function round(to_round)
+                        local divided = to_round / 5
+                        local rounded = 5 * math.floor(divided)
+                        return rounded
+                    end
+                    changed = true
+                    game.Players.LocalPlayer.Power.Value = round(magnitude)
+                    task.wait(0.05)
+                elseif magnitude < 120 and magnitude < 71 then
+                    local  magnitude = (char.HumanoidRootPart.Position - _G.hoop).Magnitude * 1.41
+                    local function round(to_round)
+                        local divided = to_round / 5
+                        local rounded = 5 * math.floor(divided)
+                        return rounded
+                    end
+                    changed = true
+                    game.Players.LocalPlayer.Power.Value = round(magnitude)
+                    task.wait(0.05)
+                end
+            end
+        end
+    end)
+end))
+
+local Mouse, Backup = game.Players.LocalPlayer:GetMouse()
+Backup = hookmetamethod(Mouse, "__index", newcclosure(function(self, idx)
+    if not checkcaller() then
+        if idx == "Hit" then
+            return CFrame.new(_G.sp.X,_G.sp.Y)
+        elseif idx == "X" then
+            return _G.sp.X
+        elseif idx == "Y" then
+            return _G.sp.Y
+        end
+    end
+   return Backup(self, idx)
+end));
+
+ hookfunction(game:GetService("UserInputService").GetMouseLocation,newcclosure(function()
+    return Vector2.new(_G.sp.X,_G.sp.Y)
+end))
+
+local old
+old = hookmetamethod(game,"__namecall",function(self,...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if method == "GetMouseLocation" then
+        return Vector2.new(_G.sp.X, _G.mag)
+    end
+    return old(self,...)
+end)
